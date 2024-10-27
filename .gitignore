@@ -2,3 +2,8 @@ myenv/
 *.log
 *.png
 __pycache__/
+myenv/
+*.log
+*.png
+__pycache__/
+.env
