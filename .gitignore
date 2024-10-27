@@ -1,0 +1,4 @@
+myenv/
+*.log
+*.png
+__pycache__/
