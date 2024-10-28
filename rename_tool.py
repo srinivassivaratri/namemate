@@ -13,6 +13,8 @@ from groq import Groq
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
+import speech_recognition as sr
+import PyPDF2
 
 # Load environment variables
 load_dotenv()
@@ -61,6 +63,37 @@ def extract_text_from_image(image_path):
         return None
     except Exception as e:
         logging.error(f"Error extracting text from {image_path}: {e}")
+        return None
+
+def extract_text_from_file(file_path):
+    """Extract text from various file types."""
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff']:
+        # Image files
+        return extract_text_from_image(file_path)
+    elif ext in ['.txt', '.md', '.py', '.java', '.html', '.csv', '.json', '.xml', '.pdf']:
+        # Text and PDF files
+        if ext == '.pdf':
+            return extract_text_from_pdf(file_path)
+        else:
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    # Clean up the text
+                    clean_text = re.sub(r'[^\w\s-]', ' ', content)
+                    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                    return clean_text
+            except Exception as e:
+                logging.error(f"Error reading {file_path}: {e}")
+                return None
+    elif ext in ['.mp3', '.wav', '.ogg', '.flac']:
+        # Audio files
+        return extract_text_from_audio(file_path)
+    elif ext in ['.mp4', '.avi', '.mov', '.mkv']:
+        # Video files
+        return extract_text_from_video(file_path)
+    else:
+        # Other file types
         return None
 
 def clean_filename(text):
@@ -160,7 +193,7 @@ def get_smart_name_llm(content):
         return None
 
 def generate_unique_name(base_name, ext, name_counter):
-    """Generate unique filename with counter if needed."""
+    """Generate unique filename with counter if needed, preserving the original extension."""
     if name_counter[base_name] > 1:
         return f"{base_name}_{name_counter[base_name]}{ext}"
     return f"{base_name}{ext}"
@@ -189,13 +222,12 @@ def rename_files(directory='.', confirm=True, batch_size=10):
             file_path = os.path.join(directory, filename)
             print(f"\nProcessing file {idx}/{len(files)}: {filename}")
             
+            content = extract_text_from_file(file_path)
+            if not content:
+                print(f"No content extracted from {filename}")
+                continue
+            
             try:
-                # Extract text from image
-                content = extract_text_from_image(file_path)
-                if not content:
-                    print(f"No content extracted from {filename}")
-                    continue
-                
                 # Generate name using LLM
                 base_name = get_smart_name_llm(content)
                 if not base_name:
@@ -255,6 +287,70 @@ def rename_files(directory='.', confirm=True, batch_size=10):
         logging.error(f"Error in rename_files: {e}")
         print(f"An error occurred: {e}")
 
+def extract_text_from_pdf(file_path):
+    """Extract text from PDF files with improved handling."""
+    try:
+        with open(file_path, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            
+            if reader.is_encrypted:
+                try:
+                    reader.decrypt('')
+                except Exception as e:
+                    logging.error(f"Cannot decrypt PDF {file_path}: {e}")
+                    return None
+            
+            text = ''
+            max_pages = 10  # Limit to first 10 pages
+            for i, page in enumerate(reader.pages):
+                if i >= max_pages:
+                    break
+                try:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text
+                except Exception as e:
+                    logging.error(f"Error extracting text from page {i+1} of {file_path}: {e}")
+                    continue  # Skip to the next page
+            
+            clean_text = re.sub(r'[^\w\s-]', ' ', text)
+            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+            return clean_text if clean_text else None
+    except Exception as e:
+        logging.error(f"Error extracting text from PDF {file_path}: {e}")
+        return None
+
+def extract_text_from_audio(file_path):
+    """Extract text from audio files using speech recognition."""
+    try:
+        r = sr.Recognizer()
+        with sr.AudioFile(file_path) as source:
+            audio = r.record(source)
+            text = r.recognize_google(audio)
+            clean_text = re.sub(r'[^\w\s-]', ' ', text)
+            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+            return clean_text if clean_text else None
+    except Exception as e:
+        logging.error(f"Error extracting text from audio {file_path}: {e}")
+        return None
+
+def extract_text_from_video(file_path):
+    """Extract text from video files by extracting audio and performing speech recognition."""
+    temp_audio = "temp_audio.wav"
+    try:
+        # Extract audio using ffmpeg
+        os.system(f"ffmpeg -i \"{file_path}\" -q:a 0 -map a {temp_audio} -y")
+        # Extract text from audio
+        text = extract_text_from_audio(temp_audio)
+        # Remove temporary audio file
+        os.remove(temp_audio)
+        return text
+    except Exception as e:
+        logging.error(f"Error extracting text from video {file_path}: {e}")
+        if os.path.exists(temp_audio):
+            os.remove(temp_audio)
+        return None
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="A file renamer that generates filenames based on image content."
@@ -269,3 +365,4 @@ if __name__ == "__main__":
     
     directory = convert_windows_path_to_wsl(args.directory)
     rename_files(directory, confirm=not args.yes, batch_size=10 if args.test else None)
+
