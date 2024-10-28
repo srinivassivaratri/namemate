@@ -1,92 +1,63 @@
 # Namemate
 
 ## Task
-A CLI tool that automatically renames screenshot files based on their content using OCR and AI. Perfect for organizing messy screenshot folders with meaningless names like "Screenshot_20240126.png".
+CLI tool that intelligently renames files based on their content using OCR and AI. Extracts text from images, PDFs, audio, and video files to generate meaningful single-word names.
 
 ## Spec
-- Reads text from screenshots, PDFs, audio, and video files
-- Uses AI to generate meaningful single-word names
-- Handles batch processing
-- Supports test mode for safe previews
-- Works on Windows (via WSL) and Linux
+- OCR text extraction from images using Tesseract
+- PDF text extraction using PyPDF2 
+- Audio transcription using SpeechRecognition
+- Video transcription (extracts audio first)
+- AI filename generation using Groq API
+- Batch processing with preview mode
+- Cross-platform (Linux/WSL)
+- Handles duplicates with auto-numbering
 
 ## Plan
 
 1. Install Dependencies
+```bash
+pip install pillow pytesseract torch groq python-dotenv speech_recognition PyPDF2
+sudo apt install tesseract-ocr ffmpeg    # Linux/WSL
+brew install tesseract ffmpeg            # macOS
+```
 
-   Install the required Python packages using pip:
-   ```bash
-   pip install pillow pytesseract torch groq python-dotenv speech_recognition PyPDF2
-   ```
-
-   For Tesseract OCR:
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install tesseract-ocr
-
-   # macOS
-   brew install tesseract
-   ```
-
-2. Set Up Environment Variables
-
-   Create a .env file in the project directory with your GROQ API key:
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
+2. Configure
+```bash
+# Create .env with your Groq API key
+GROQ_API_KEY=your_key_here
+```
 
 3. Usage
+```bash
+# Test mode (first 10 files)
+python rename_tool.py -d "/path/to/files" -t
 
-   Test Mode (Processes First 10 Files Only):
-   ```bash
-   python rename_tool.py -d "path/to/your/screenshots" -t
-   ```
+# Process all files with confirmation
+python rename_tool.py -d "/path/to/files"
 
-   This will process the first 10 files in the specified directory as a test run.
-
-   Process All Files with Confirmation:
-   ```bash
-   python rename_tool.py -d "path/to/your/screenshots"
-   ```
-
-   You'll be prompted to confirm before renaming the files.
-
-   Process All Files without Confirmation:
-   ```bash
-   python rename_tool.py -d "path/to/your/screenshots" -y
-   ```
-
-   This will rename all files in the directory without asking for confirmation.
-
-4. Example
-
-   Before:
-   - Screenshot_20240126.png
-   - image_001.jpg
-   - screen_capture_2024.png
-
-   After:
-   - netconfig.png
-   - docker.png
-   - apitest.png
+# Process all files without confirmation
+python rename_tool.py -d "/path/to/files" -y
+```
 
 ## Code
 
-Main features:
-- Extracts text from images, PDFs, audio and video files
-- Generates filenames using GROQ API
-- Handles batch renaming with preview
-- Cross-platform support
+Key Components:
+- File type detection and text extraction
+- OCR with preprocessing for better results
+- Smart filename generation using Groq LLM
+- Duplicate name handling
+- Cross-platform path conversion
 - Comprehensive logging
 
 Dependencies:
 - pillow: Image processing
 - pytesseract: OCR engine
-- torch: AI model support
-- groq: AI interactions
-- python-dotenv: Environment variables
-- speech_recognition: Audio processing
+- groq: AI API client
+- python-dotenv: Environment config
+- speech_recognition: Audio transcription
 - PyPDF2: PDF text extraction
+- ffmpeg: Video processing
 
 ---
 
