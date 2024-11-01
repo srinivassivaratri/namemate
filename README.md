@@ -1,63 +1,73 @@
 # Namemate
 
 ## Task
-CLI tool that intelligently renames files based on their content using OCR and AI. Extracts text from images, PDFs, audio, and video files to generate meaningful single-word names.
+A CLI tool for bulk renaming files with preset operations. Supports various renaming patterns like replacing spaces, changing case, adding prefixes/suffixes, and changing extensions.
 
 ## Spec
-- OCR text extraction from images using Tesseract
-- PDF text extraction using PyPDF2 
-- Audio transcription using SpeechRecognition
-- Video transcription (extracts audio first)
-- AI filename generation using Groq API
-- Batch processing with preview mode
-- Cross-platform (Linux/WSL)
-- Handles duplicates with auto-numbering
+- Replace spaces with underscores
+- Convert filenames to lowercase/uppercase
+- Add prefix/suffix to filenames
+- Change file extensions
+- Remove specific text from filenames
+- Cross-platform (Windows/Linux/WSL)
+- Handles duplicates
+- Dry-run mode for previewing changes
+- File filtering support
 
 ## Plan
 
 1. Install Dependencies
 ```bash
-pip install pillow pytesseract torch groq python-dotenv speech_recognition PyPDF2
-sudo apt install tesseract-ocr ffmpeg    # Linux/WSL
-brew install tesseract ffmpeg            # macOS
+pip install argparse
 ```
 
-2. Configure
+2. Usage
 ```bash
-# Create .env with your Groq API key
-GROQ_API_KEY=your_key_here
-```
+# List available operations
+python rename_tool.py --list
 
-3. Usage
-```bash
-# Test mode (first 10 files)
-python rename_tool.py -d "/path/to/files" -t
+# Replace spaces with underscores
+python rename_tool.py -d "/path/to/files" -o replace_spaces
 
-# Process all files with confirmation
-python rename_tool.py -d "/path/to/files"
+# Convert to lowercase
+python rename_tool.py -d "/path/to/files" -o lowercase
 
-# Process all files without confirmation
-python rename_tool.py -d "/path/to/files" -y
+# Add prefix (will prompt for prefix)
+python rename_tool.py -d "/path/to/files" -o add_prefix
+
+# Change extension (will prompt for new extension)
+python rename_tool.py -d "/path/to/files" -o change_extension
+
+# Filter specific files
+python rename_tool.py -d "/path/to/files" -o lowercase --filter "*.txt"
+
+# Preview changes without renaming
+python rename_tool.py -d "/path/to/files" -o lowercase --dry-run
 ```
 
 ## Code
 
 Key Components:
-- File type detection and text extraction
-- OCR with preprocessing for better results
-- Smart filename generation using Groq LLM
-- Duplicate name handling
-- Cross-platform path conversion
-- Comprehensive logging
+- Path conversion for cross-platform compatibility
+- Preset renaming operations
+- File filtering
+- Interactive prompts for customization
+- Dry-run mode for safety
+
+Operations:
+- replace_spaces: Replace spaces with underscores
+- lowercase: Convert filenames to lowercase
+- uppercase: Convert filenames to uppercase
+- add_prefix: Add a prefix to filenames
+- add_suffix: Add a suffix to filenames
+- change_extension: Change the file extension
+- remove_text: Remove specific text from filenames
 
 Dependencies:
-- pillow: Image processing
-- pytesseract: OCR engine
-- groq: AI API client
-- python-dotenv: Environment config
-- speech_recognition: Audio transcription
-- PyPDF2: PDF text extraction
-- ffmpeg: Video processing
+- argparse: Command-line argument parsing
+- os: File operations
+- re: Regular expressions
+- platform: System detection for path handling
 
 ---
 
