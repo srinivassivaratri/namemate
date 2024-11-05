@@ -1,74 +1,97 @@
-# Namemate
+# 🔄 Namemate
 
-## Task
-A CLI tool for bulk renaming files with preset operations. Supports various renaming patterns like replacing spaces, changing case, adding prefixes/suffixes, and changing extensions.
+A lightning-fast CLI tool for bulk renaming files with smart presets. Perfect for developers and content creators who need to maintain consistent file naming conventions across projects.
 
-## Spec
-- Replace spaces with underscores
-- Convert filenames to lowercase/uppercase
-- Add prefix/suffix to filenames
-- Change file extensions
-- Remove specific text from filenames
-- Cross-platform (Windows/Linux/WSL)
-- Handles duplicates
-- Dry-run mode for previewing changes
-- File filtering support
+## 🎯 Why Namemate?
 
-## Plan
+Managing consistent file naming across projects is a pain. Manually renaming files is tedious and error-prone, especially when dealing with hundreds of files. Namemate solves this by providing:
 
-1. Install Dependencies
+- One-command bulk renaming with smart presets
+- Cross-platform support (Windows/Linux/WSL)
+- Safe dry-run mode to preview changes
+- Flexible file filtering
+- Duplicate handling
+
+## 🚀 Quick Start
+
+### Install
+
 ```bash
-pip install argparse
+pip install namemate
 ```
 
-2. Usage
-```bash
-# List available operations
-python rename_tool.py --list
+### Basic Usage
 
+```bash
 # Replace spaces with underscores
-python rename_tool.py -d "/path/to/files" -o replace_spaces
+namemate -d "/path/to/files" -o replace_spaces
 
 # Convert to lowercase
-python rename_tool.py -d "/path/to/files" -o lowercase
-
-# Add prefix (will prompt for prefix)
-python rename_tool.py -d "/path/to/files" -o add_prefix
-
-# Change extension (will prompt for new extension)
-python rename_tool.py -d "/path/to/files" -o change_extension
-
-# Filter specific files
-python rename_tool.py -d "/path/to/files" -o lowercase --filter "*.txt"
-
-# Preview changes without renaming
-python rename_tool.py -d "/path/to/files" -o lowercase --dry-run
+namemate -d "/path/to/files" -o lowercase
 ```
 
-## Code
+## 📖 Usage
 
-Key Components:
-- Path conversion for cross-platform compatibility
-- Preset renaming operations
-- File filtering
-- Interactive prompts for customization
-- Dry-run mode for safety
+### Available Operations
 
-Operations:
-- replace_spaces: Replace spaces with underscores
-- lowercase: Convert filenames to lowercase
-- uppercase: Convert filenames to uppercase
-- add_prefix: Add a prefix to filenames
-- add_suffix: Add a suffix to filenames
-- change_extension: Change the file extension
-- remove_text: Remove specific text from filenames
+- `replace_spaces` - Replace spaces with underscores
+- `lowercase` - Convert to lowercase
+- `uppercase` - Convert to uppercase
+- `add_prefix` - Add custom prefix
+- `add_suffix` - Add custom suffix
+- `change_extension` - Change file extensions
+- `remove_text` - Remove specific text
 
-Dependencies:
-- argparse: Command-line argument parsing
-- os: File operations
-- re: Regular expressions
-- platform: System detection for path handling
+### Advanced Examples
 
----
+Preview changes without renaming:
+```bash
+namemate -d "/path/to/files" -o lowercase --dry-run
+```
 
-Feel free to contribute to the project or suggest improvements!
+Filter specific files:
+```bash
+namemate -d "/path/to/files" -o lowercase --filter "*.txt"
+```
+
+Add prefix to all images:
+```bash
+namemate -d "/path/to/files" -o add_prefix --filter "*.{jpg,png,gif}"
+```
+
+## 🛠️ Contributing
+
+### Setup Development Environment
+
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/namemate
+cd namemate
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or
+.\venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Run Tests
+
+```bash
+python -m pytest
+```
+
+### Submit Changes
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+MIT License - feel free to use this in your own projects!
